@@ -251,39 +251,45 @@ public class BeanTransformerAdapter<T> implements ResultTransformer {
 	@Override
 	public Object transformTuple(Object[] tuple, String[] aliases) {
 		T mappedObject = BeanUtils.instantiate(this.mappedClass);
-		BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(mappedObject);
+//		BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(mappedObject);
+		BeanWrapper bw = new BeanWrapperImpl(mappedObject);
 		initBeanWrapper(bw);
+		bw.setAutoGrowNestedPaths(true);
 
 		Set<String> populatedProperties = (isCheckFullyPopulated() ? new HashSet<String>() : null);
 		for (int i = 0; i < aliases.length; i++) {
 			String column = aliases[i];
-			PropertyDescriptor pd = this.mappedFields.get(column.replaceAll(" ", "").toLowerCase());
-			if (pd != null) {
-				try {
-					Object value = tuple[i];
-					try {
-						bw.setPropertyValue(pd.getName(), value);
-					}
-					catch (TypeMismatchException e) {
-						if (value == null && primitivesDefaultedForNullValue) {
-							logger.debug("Intercepted TypeMismatchException for column " + column + " and column '"
-									+ column + "' with value " + value + " when setting property '" + pd.getName() +
-									"' of type " + pd.getPropertyType()
-									+ " on object: " + mappedObject);
-						}
-						else {
-							throw e;
-						}
-					}
-					if (populatedProperties != null) {
-						populatedProperties.add(pd.getName());
-					}
-				}
-				catch (NotWritablePropertyException ex) {
-					throw new DataRetrievalFailureException("Unable to map column " + column
-							+ " to property " + pd.getName(), ex);
-				}
-			}
+//			PropertyDescriptor pd = this.mappedFields.get(column.replaceAll(" ", "").toLowerCase());
+//			if (pd != null) {
+//				try {
+//					Object value = tuple[i];
+//					try {
+//						bw.setPropertyValue(pd.getName(), value);
+//					}
+//					catch (TypeMismatchException e) {
+//						if (value == null && primitivesDefaultedForNullValue) {
+//							logger.debug("Intercepted TypeMismatchException for column " + column + " and column '"
+//									+ column + "' with value " + value + " when setting property '" + pd.getName() +
+//									"' of type " + pd.getPropertyType()
+//									+ " on object: " + mappedObject);
+//						}
+//						else {
+//							throw e;
+//						}
+//					}
+//					if (populatedProperties != null) {
+//						populatedProperties.add(pd.getName());
+//					}
+//				}
+//				catch (NotWritablePropertyException ex) {
+//					throw new DataRetrievalFailureException("Unable to map column " + column
+//							+ " to property " + pd.getName(), ex);
+//				}
+//			}
+//			else{
+				Object value = tuple[i];
+				bw.setPropertyValue(column,value);
+//			}
 		}
 
 		if (populatedProperties != null && !populatedProperties.equals(this.mappedProperties)) {

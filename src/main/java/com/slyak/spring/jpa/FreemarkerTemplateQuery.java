@@ -98,18 +98,23 @@ public class FreemarkerTemplateQuery extends AbstractJpaQuery {
 		//must be hibernate QueryImpl
 		QueryImpl query;
 
+		boolean equals = Map.class.equals(objectType);
+
 		if (useJpaSpec && getQueryMethod().isQueryForEntity()) {
 			query = AopTargetUtils.getTarget(getEntityManager().createNativeQuery(queryString, objectType));
-		}
-		else {
+		}else{
 			query = AopTargetUtils.getTarget(getEntityManager().createNativeQuery(queryString));
-			//find generic type
-			ClassTypeInformation<?> ctif = ClassTypeInformation.from(objectType);
-			TypeInformation<?> actualType = ctif.getActualType();
-			Class<?> genericType = actualType.getType();
+			if(equals){
+				QueryBuilder.transform(query.getHibernateQuery(), objectType);
+			}else{
+				//find generic type
+				ClassTypeInformation<?> ctif = ClassTypeInformation.from(objectType);
+				TypeInformation<?> actualType = ctif.getActualType();
+				Class<?> genericType = actualType.getType();
 
-			if (genericType != null && genericType != Void.class) {
-				QueryBuilder.transform(query.getHibernateQuery(), genericType);
+				if (genericType != null && genericType != Void.class) {
+					QueryBuilder.transform(query.getHibernateQuery(), genericType);
+				}
 			}
 		}
 		return query;
